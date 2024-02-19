@@ -1,11 +1,55 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <WinSock2.h>
+#include <WS2tcpip.h>
+
+#pragma comment(lib, "Ws2_32.lib")
 
 using namespace std;
 
-bool FileOpen(string command, string fileName);
-// 추후에 IP와 포트를 1, 2번으로 넣고, 명령어, 파일이름, 내용은 뒤에다가 넣는걸로
+void FileOpen(string command, string fileName);
+
+
+void SendUDPMessage(const char* ip, int port, const std::string& message) {
+    // Initialize Winsock
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        std::cerr << "WSAStartup failed\n";
+        return;
+    }
+
+    // Create socket
+    SOCKET sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (sockfd == INVALID_SOCKET) {
+        std::cerr << "Error creating socket: " << WSAGetLastError() << std::endl;
+        WSACleanup();
+        return;
+    }
+
+    // Server address
+    sockaddr_in serverAddr;
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(port);
+    inet_pton(AF_INET, ip, &serverAddr.sin_addr); // ipv4 주소 설정
+
+    // Send data
+    int bytesSent = sendto(sockfd, message.c_str(), message.length(), 0, (sockaddr*)&serverAddr, sizeof(serverAddr));
+    if (bytesSent == SOCKET_ERROR) {
+        std::cerr << "Error sending message: " << WSAGetLastError() << std::endl;
+        closesocket(sockfd);
+        WSACleanup();
+        return;
+    }
+
+    std::cout << "Message sent successfully.\n";
+
+    // Clean up
+    closesocket(sockfd);
+    WSACleanup();
+}
+
+
 int main(int argc, char* argv[]) {
 	
 	if (argc < 3) {
@@ -15,9 +59,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	// Get command line argument
-	//const char* ip = argv[1];
-	//const char* port = argv[2];
-
+	const char* ip = argv[1];
+    const int port = stoi(argv[2]);
 
 	// Get command from user
 	string command;
@@ -31,6 +74,10 @@ int main(int argc, char* argv[]) {
         }
         else {
             FileOpen(command, fileName);
+            string message = command + " " + fileName;
+
+            // Send UDP message
+            SendUDPMessage(ip, port, message);
         }
     }
 
@@ -40,7 +87,7 @@ int main(int argc, char* argv[]) {
 
 }
 
-bool FileOpen(string command, string fileName) {
+void FileOpen(string command, string fileName) {
     ifstream inFile;
     ofstream outFile;
 
@@ -80,9 +127,8 @@ bool FileOpen(string command, string fileName) {
         ofstream outFile(fileName);
             if (!outFile) {
                 cerr << "The file does not exist." << endl;
-                return true;
             }
-            cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            //cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
             cout << "Enter what you want to write to the file. Press Ctrl+Z to complete your entry." << endl;
             string input;
@@ -100,5 +146,4 @@ bool FileOpen(string command, string fileName) {
         cerr << "Command : -o : Open, -c : close, -r : read, -w : write, -q : quit" << endl;
     }
 
-    return true;
 }
