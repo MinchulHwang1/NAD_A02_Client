@@ -3,6 +3,7 @@
 #include <fstream>
 #include <WinSock2.h>
 #include <WS2tcpip.h>
+#include <chrono>
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -10,45 +11,13 @@ using namespace std;
 
 void FileOpen(string command, string fileName);
 
+string generateUniqueID();
 
-void SendUDPMessage(const char* ip, int port, const std::string& message) {
-    // Initialize Winsock
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        std::cerr << "WSAStartup failed\n";
-        return;
-    }
+string globalUniqueID = generateUniqueID();
 
-    // Create socket
-    SOCKET sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (sockfd == INVALID_SOCKET) {
-        std::cerr << "Error creating socket: " << WSAGetLastError() << std::endl;
-        WSACleanup();
-        return;
-    }
+void SendUDPMessage(const char* ip, int port, const std::string& message);
 
-    // Server address
-    sockaddr_in serverAddr;
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(port);
-    inet_pton(AF_INET, ip, &serverAddr.sin_addr); // ipv4 주소 설정
-
-    // Send data
-    int bytesSent = sendto(sockfd, message.c_str(), message.length(), 0, (sockaddr*)&serverAddr, sizeof(serverAddr));
-    if (bytesSent == SOCKET_ERROR) {
-        std::cerr << "Error sending message: " << WSAGetLastError() << std::endl;
-        closesocket(sockfd);
-        WSACleanup();
-        return;
-    }
-
-    std::cout << "Message sent successfully.\n";
-
-    // Clean up
-    closesocket(sockfd);
-    WSACleanup();
-}
-
+void SendTCPMessage(const char* ip, int port, const std::string& message);
 
 int main(int argc, char* argv[]) {
 	
@@ -65,11 +34,13 @@ int main(int argc, char* argv[]) {
 	// Get command from user
 	string command;
 	string fileName;
-
+    cout << "Your number : " << globalUniqueID << endl;
     while (true) {
         cin >> command >> fileName;
 
         if (command == "-q") {
+            string message = command + " " + fileName;
+            SendTCPMessage(ip, port, message);
             break;
         }
         else {
@@ -77,7 +48,7 @@ int main(int argc, char* argv[]) {
             string message = command + " " + fileName;
 
             // Send UDP message
-            SendUDPMessage(ip, port, message);
+            SendTCPMessage(ip, port, message);
         }
     }
 
@@ -146,4 +117,100 @@ void FileOpen(string command, string fileName) {
         cerr << "Command : -o : Open, -c : close, -r : read, -w : write, -q : quit" << endl;
     }
 
+}
+
+string generateUniqueID() {
+    auto now = chrono::system_clock::now();
+    auto duration = now.time_since_epoch();
+    auto millis = chrono::duration_cast<chrono::milliseconds>(duration).count();
+    return to_string(millis);
+}
+
+void SendUDPMessage(const char* ip, int port, const std::string& message) {
+    // Initialize Winsock
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        std::cerr << "WSAStartup failed\n";
+        return;
+    }
+
+    // Create socket
+    SOCKET sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (sockfd == INVALID_SOCKET) {
+        std::cerr << "Error creating socket: " << WSAGetLastError() << std::endl;
+        WSACleanup();
+        return;
+    }
+
+    // Server address
+    sockaddr_in serverAddr;
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(port);
+    inet_pton(AF_INET, ip, &serverAddr.sin_addr);
+
+    string messageWithID = globalUniqueID + " " + message;
+
+    // Send data
+    int bytesSent = sendto(sockfd, message.c_str(), message.length(), 0, (sockaddr*)&serverAddr, sizeof(serverAddr));
+    if (bytesSent == SOCKET_ERROR) {
+        std::cerr << "Error sending message: " << WSAGetLastError() << std::endl;
+        closesocket(sockfd);
+        WSACleanup();
+        return;
+    }
+
+    std::cout << "Message sent successfully.\n";
+
+    // Clean up
+    closesocket(sockfd);
+    WSACleanup();
+}
+
+
+void SendTCPMessage(const char* ip, int port, const std::string& message) {
+    // Initialize Winsock
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        std::cerr << "WSAStartup failed\n";
+        return;
+    }
+
+    // Create socket
+    SOCKET sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (sockfd == INVALID_SOCKET) {
+        std::cerr << "Error creating socket: " << WSAGetLastError() << std::endl;
+        WSACleanup();
+        return;
+    }
+
+    // Server address
+    sockaddr_in serverAddr;
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(port);
+    inet_pton(AF_INET, ip, &serverAddr.sin_addr);
+
+    // Connect to server
+    if (connect(sockfd, (sockaddr*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
+        std::cerr << "Error connecting to server: " << WSAGetLastError() << std::endl;
+        closesocket(sockfd);
+        WSACleanup();
+        return;
+    }
+
+    string messageWithID = globalUniqueID + " " + message;
+
+    // Send data
+    int bytesSent = send(sockfd, messageWithID.c_str(), messageWithID.length(), 0);
+    if (bytesSent == SOCKET_ERROR) {
+        std::cerr << "Error sending message: " << WSAGetLastError() << std::endl;
+        closesocket(sockfd);
+        WSACleanup();
+        return;
+    }
+
+    std::cout << "Message sent successfully.\n";
+
+    // Clean up
+    closesocket(sockfd);
+    WSACleanup();
 }
