@@ -1,3 +1,14 @@
+/*
+* File Name         : NAD_A02_Client.cpp 
+* Programmer        : Min Chul Hwang - 8818858
+* Submission Date   : 2/24/2024
+* Purpose           : This program is client side made as CPP file.
+*                     This program can correspond with server side which is logging service through the TCP connection
+*                     it can take command, and file name include IP and port in command line argument.
+*                     and send them to server through TCP connection
+* Function List     : FileOpen, generateUniqueID, globalUniqueID, SendTCPMessage.
+*/
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -15,10 +26,16 @@ string generateUniqueID();
 
 string globalUniqueID = generateUniqueID();
 
-void SendUDPMessage(const char* ip, int port, const std::string& message);
+//void SendUDPMessage(const char* ip, int port, const std::string& message);
 
 void SendTCPMessage(const char* ip, int port, const std::string& message);
 
+
+/*
+* Main Function
+* Purpose       : This function get IP and port number from command line argument.
+*                 and also user prompt command and file name, and send it to SednTCPMessage function.
+*/
 int main(int argc, char* argv[]) {
 	
 	if (argc < 3) {
@@ -52,12 +69,20 @@ int main(int argc, char* argv[]) {
         }
     }
 
-
-
 	return 0;
-
 }
 
+
+/*
+* Function Comment Header
+* Function Name         : FileOpen
+* Purpose               : This function can figure the file is exist or not.
+*                         but also, it can translate what user input is and open, close, read, and write in the file.
+* Input                 : command           string          the contents that contain information of command
+*                         fileName          string          the contents that contain file name
+* Output                : A proper message followed each command
+* Return                : NONE
+*/
 void FileOpen(string command, string fileName) {
     ifstream inFile;
     ofstream outFile;
@@ -119,6 +144,15 @@ void FileOpen(string command, string fileName) {
 
 }
 
+/*
+* Function Comment Header
+* Function Name         : generateUniqueID
+* Purpose               : This function generates unique number come up with current time to give unique number as clients when they connect with server
+*                         and it can be distinguished as number
+* Input                 : NONE
+* Output                : NONE
+* Return                : Unique number based on current time
+*/
 string generateUniqueID() {
     auto now = chrono::system_clock::now();
     auto duration = now.time_since_epoch();
@@ -126,47 +160,17 @@ string generateUniqueID() {
     return to_string(millis);
 }
 
-void SendUDPMessage(const char* ip, int port, const std::string& message) {
-    // Initialize Winsock
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        std::cerr << "WSAStartup failed\n";
-        return;
-    }
 
-    // Create socket
-    SOCKET sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (sockfd == INVALID_SOCKET) {
-        std::cerr << "Error creating socket: " << WSAGetLastError() << std::endl;
-        WSACleanup();
-        return;
-    }
-
-    // Server address
-    sockaddr_in serverAddr;
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(port);
-    inet_pton(AF_INET, ip, &serverAddr.sin_addr);
-
-    string messageWithID = globalUniqueID + " " + message;
-
-    // Send data
-    int bytesSent = sendto(sockfd, message.c_str(), message.length(), 0, (sockaddr*)&serverAddr, sizeof(serverAddr));
-    if (bytesSent == SOCKET_ERROR) {
-        std::cerr << "Error sending message: " << WSAGetLastError() << std::endl;
-        closesocket(sockfd);
-        WSACleanup();
-        return;
-    }
-
-    std::cout << "Message sent successfully.\n";
-
-    // Clean up
-    closesocket(sockfd);
-    WSACleanup();
-}
-
-
+/*
+* Function Comment Header
+* Function Name         : SendTCPMessage
+* Purpose               : This function send message what user write to server called logging service.
+* Input                 : ip        const char*         the ip address written in command line arguments
+*                         port      int                 the port number written in command line arguments
+*                         message   string              the message contains information which user input
+* Output                : The proper message what user input
+* Return                : NONE
+*/
 void SendTCPMessage(const char* ip, int port, const std::string& message) {
     // Initialize Winsock
     WSADATA wsaData;
@@ -183,7 +187,7 @@ void SendTCPMessage(const char* ip, int port, const std::string& message) {
         return;
     }
 
-    // Server address
+    // Get Server address
     sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(port);
@@ -197,6 +201,7 @@ void SendTCPMessage(const char* ip, int port, const std::string& message) {
         return;
     }
 
+    // Apprend message and unique number
     string messageWithID = globalUniqueID + " " + message;
 
     // Send data
@@ -210,7 +215,49 @@ void SendTCPMessage(const char* ip, int port, const std::string& message) {
 
     std::cout << "Message sent successfully.\n";
 
-    // Clean up
+    // Clean up socket
     closesocket(sockfd);
     WSACleanup();
 }
+
+
+
+//void SendUDPMessage(const char* ip, int port, const std::string& message) {
+//    // Initialize Winsock
+//    WSADATA wsaData;
+//    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+//        std::cerr << "WSAStartup failed\n";
+//        return;
+//    }
+//
+//    // Create socket
+//    SOCKET sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+//    if (sockfd == INVALID_SOCKET) {
+//        std::cerr << "Error creating socket: " << WSAGetLastError() << std::endl;
+//        WSACleanup();
+//        return;
+//    }
+//
+//    // Server address
+//    sockaddr_in serverAddr;
+//    serverAddr.sin_family = AF_INET;
+//    serverAddr.sin_port = htons(port);
+//    inet_pton(AF_INET, ip, &serverAddr.sin_addr);
+//
+//    string messageWithID = globalUniqueID + " " + message;
+//
+//    // Send data
+//    int bytesSent = sendto(sockfd, message.c_str(), message.length(), 0, (sockaddr*)&serverAddr, sizeof(serverAddr));
+//    if (bytesSent == SOCKET_ERROR) {
+//        std::cerr << "Error sending message: " << WSAGetLastError() << std::endl;
+//        closesocket(sockfd);
+//        WSACleanup();
+//        return;
+//    }
+//
+//    std::cout << "Message sent successfully.\n";
+//
+//    // Clean up
+//    closesocket(sockfd);
+//    WSACleanup();
+//}
