@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<results version="2">
+    <cppcheck version="2.13.0"/>
+    <errors>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &amp;lt;iostream&amp;gt; not found. Please note: Cppcheck does not need standard library headers to get proper results." verbose="Include file: &amp;lt;iostream&amp;gt; not found. Please note: Cppcheck does not need standard library headers to get proper results.">
+            <location file="NAD_A02_Client.cpp" line="12"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &amp;lt;string&amp;gt; not found. Please note: Cppcheck does not need standard library headers to get proper results." verbose="Include file: &amp;lt;string&amp;gt; not found. Please note: Cppcheck does not need standard library headers to get proper results.">
+            <location file="NAD_A02_Client.cpp" line="13"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &amp;lt;fstream&amp;gt; not found. Please note: Cppcheck does not need standard library headers to get proper results." verbose="Include file: &amp;lt;fstream&amp;gt; not found. Please note: Cppcheck does not need standard library headers to get proper results.">
+            <location file="NAD_A02_Client.cpp" line="14"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &amp;lt;WinSock2.h&amp;gt; not found. Please note: Cppcheck does not need standard library headers to get proper results." verbose="Include file: &amp;lt;WinSock2.h&amp;gt; not found. Please note: Cppcheck does not need standard library headers to get proper results.">
+            <location file="NAD_A02_Client.cpp" line="15"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &amp;lt;WS2tcpip.h&amp;gt; not found. Please note: Cppcheck does not need standard library headers to get proper results." verbose="Include file: &amp;lt;WS2tcpip.h&amp;gt; not found. Please note: Cppcheck does not need standard library headers to get proper results.">
+            <location file="NAD_A02_Client.cpp" line="16"/>
+        </error>
+        <error id="missingIncludeSystem" severity="information" msg="Include file: &amp;lt;chrono&amp;gt; not found. Please note: Cppcheck does not need standard library headers to get proper results." verbose="Include file: &amp;lt;chrono&amp;gt; not found. Please note: Cppcheck does not need standard library headers to get proper results.">
+            <location file="NAD_A02_Client.cpp" line="17"/>
+        </error>
+        <error id="cstyleCast" severity="style" msg="C-style pointer casting" verbose="C-style pointer casting detected. C++ offers four different kinds of casts as replacements: static_cast, const_cast, dynamic_cast and reinterpret_cast. A C-style cast could evaluate to any of those automatically, thus it is considered safer if the programmer explicitly states which kind of cast is expected." cwe="398" file0="NAD_A02_Client.cpp">
+            <location file="NAD_A02_Client.cpp" line="197"/>
+        </error>
+        <error id="shadowVariable" severity="style" msg="Local variable &amp;#039;outFile&amp;#039; shadows outer variable" verbose="Local variable &amp;#039;outFile&amp;#039; shadows outer variable" cwe="398" file0="NAD_A02_Client.cpp">
+            <location file="NAD_A02_Client.cpp" line="123" info="Shadow variable"/>
+            <location file="NAD_A02_Client.cpp" line="88" info="Shadowed declaration"/>
+        </error>
+        <error id="passedByValue" severity="performance" msg="Function parameter &amp;#039;command&amp;#039; should be passed by const reference." verbose="Parameter &amp;#039;command&amp;#039; is passed by value. It could be passed as a const reference which is usually faster and recommended in C++." cwe="398" file0="NAD_A02_Client.cpp">
+            <location file="NAD_A02_Client.cpp" line="86"/>
+        </error>
+        <error id="unusedVariable" severity="style" msg="Unused variable: outFile" verbose="Unused variable: outFile" cwe="563" file0="NAD_A02_Client.cpp">
+            <location file="NAD_A02_Client.cpp" line="88"/>
+        </error>
+    </errors>
+</results>
